@@ -1,4 +1,5 @@
 'use client';
+import {conditionReferences,removeConditionReference} from '@/lib/conditions';
 import {useLocale} from './locale';
 import { Select, Color, Temporal } from './controls';
 import Link from 'next/link';
@@ -80,7 +81,7 @@ export function Editor({ id }: {
         edit({ fields: form.fields.map(f => f.id === id ? { ...f, ...patch } : f),...((patch.type==='page_break'||patch.pageStart)?{theme:{...form.theme,layout:'pages' as const}}:{}) }); }
     function move(index: number, delta: number) { if (!form)
         return; const fields = [...form.fields]; const other = index + delta; if (other < 0 || other >= fields.length)
-        return; [fields[index], fields[other]] = [fields[other], fields[index]]; const ids = fields.map(f => f.id); if (fields.some((f, i) => f.condition && ids.indexOf(f.condition.fieldId) >= i)) {
+        return; [fields[index], fields[other]] = [fields[other], fields[index]]; const ids = fields.map(f => f.id); if (fields.some((f, i) => conditionReferences(f).some(id=>ids.indexOf(id)>=i))) {
         notice(tr("조건부 문항은 참조하는 문항 뒤에 있어야 해요."));
         return;
     } edit({ fields }); }
@@ -89,7 +90,7 @@ export function Editor({ id }: {
     function duplicateBlock(f:Field){if(!form)return;const copy={...structuredClone(f),id:crypto.randomUUID()};const next=insertBlock(form.fields,copy,f.id);if(!next){notice(locale==='en'?'A form can have up to 60 blocks.':'한 폼에는 블록을 60개까지 추가할 수 있어요.');return}edit({fields:next});focusBlock(copy.id)}
     function dropBlock(sourceId:string,targetId:string|null){if(!form)return;const next=reorderBlock(form.fields,sourceId,targetId);if(!next){notice(tr('조건부 문항은 참조하는 문항 뒤에 있어야 해요.'));return}if(next!==form.fields)edit({fields:next})}
     function removeField(id: string) { if (!form)
-        return; const index=form.fields.findIndex(f=>f.id===id);const target=form.fields[index-1]||form.fields[index+1];edit({ fields: form.fields.filter(f => f.id !== id).map(f => f.condition?.fieldId === id ? { ...f, condition: undefined } : f) }); focusBlock(target?.id||null); }
+        return; const index=form.fields.findIndex(f=>f.id===id);const target=form.fields[index-1]||form.fields[index+1];edit({ fields: form.fields.filter(f => f.id !== id).map(f => removeConditionReference(f,id)) }); focusBlock(target?.id||null); }
     async function persist() { if (!form)
         return null; setBusy(true); try {
         const result = await save(normalizeDraft(form,locale));

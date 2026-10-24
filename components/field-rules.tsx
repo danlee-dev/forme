@@ -15,6 +15,7 @@ export function FieldRules({field:f,onChange}:{field:Field;onChange:(patch:Parti
  <div className="rule-columns">{limits.map(([key,label])=><label key={key}>{label}<input aria-label={label} type="number" step={f.type==='number'?'any':1} value={v[key as keyof typeof v] as number??''} placeholder={en?'No limit':'제한 없음'} onChange={e=>set(key as keyof typeof v,e.target.value===''?undefined:Number(e.target.value))}/></label>)}</div>
  {f.type==='number'&&<label className="switch-label"><input type="checkbox" checked={v.integer||false} onChange={e=>set('integer',e.target.checked)}/><span className="switch"/>{en?'Whole numbers only':'정수만 입력'}</label>}
  {impossible&&<p className="field-rule-error" role="alert">{en?'Minimum choices cannot exceed the available options.':'최소 선택 수는 선택지 개수보다 클 수 없어요.'}</p>}
+ <label className="block-setting-label">{en?'Custom error message':'오류 안내 문구'}<input maxLength={300} value={v.errorMessage||''} placeholder={en?'Use the default message':'기본 안내 문구 사용'} onChange={e=>set('errorMessage',e.target.value||undefined)}/></label>
  {invalid&&<p className="field-rule-error" role="alert">{en?'Minimum must not exceed maximum.':'최솟값은 최댓값보다 클 수 없어요.'}</p>}
  </div></details>
 }

@@ -1,0 +1,25 @@
+'use client';
+import {type Field} from '@/lib/schema';
+import {conditionRules,type ConditionOperator,type ConditionRule} from '@/lib/conditions';
+import {useLocale} from './locale';
+import {Select} from './controls';
+import {Plus,Trash2} from './icons';
+const labels:Record<ConditionOperator,[string,string]>={equals:['Is','같음'],not_equals:['Is not','같지 않음'],contains:['Contains','포함'],not_contains:['Does not contain','포함하지 않음'],starts_with:['Starts with','시작하는 값'],ends_with:['Ends with','끝나는 값'],greater_than:['Greater than','초과'],greater_or_equal:['At least','이상'],less_than:['Less than','미만'],less_or_equal:['At most','이하'],is_empty:['Is empty','비어 있음'],is_filled:['Is answered','답변 있음']};
+export function ConditionEditor({field,previous,onChange}:{field:Field;previous:Field[];onChange:(patch:Partial<Field>)=>void}){
+ const {locale}=useLocale(),en=locale==='en',rules=conditionRules(field),eligible=previous.filter(f=>!['section','page_break'].includes(f.type));
+ const save=(next:ConditionRule[],match=field.conditions?.match||'all')=>onChange({condition:undefined,conditionNeedsReview:undefined,conditions:next.length?{match,rules:next}:undefined});
+ function patch(index:number,change:Partial<ConditionRule>){save(rules.map((r,i)=>i===index?{...r,...change}:r))}
+ if(!eligible.length)return null;
+ return <details className="condition-editor" open={field.conditionNeedsReview||undefined}><summary>{en?'Show this block when':'표시 조건'}<span>{field.conditionNeedsReview?(en?'Review needed':'검토 필요'):rules.length?(en?rules.length+' rules':rules.length+'개 조건'):(en?'Always':'항상 표시')}</span></summary><div>
+ {field.conditionNeedsReview&&<p className="condition-review" role="alert">{en?'A referenced question was deleted. This block stays hidden until you choose its visibility again.':'참조 문항이 삭제되었습니다. 표시 조건을 다시 정할 때까지 이 블록은 숨겨집니다.'}</p>}
+ {!!rules.length&&<label className="block-setting-label">{en?'Show when':'다음 조건에서 표시'}<Select aria-label={en?'Rule matching':'조건 결합 방식'} value={field.conditions?.match||'all'} onChange={e=>save(rules,e.target.value as 'all'|'any')}><option value="all">{en?'All rules match (AND)':'모든 조건 충족 (AND)'}</option><option value="any">{en?'Any rule matches (OR)':'하나 이상 충족 (OR)'}</option></Select></label>}
+ {rules.map((rule,i)=>{const source=eligible.find(f=>f.id===rule.fieldId),numeric=['number','rating','linear_scale'].includes(source?.type||''),choice=['select','multi_select','dropdown','ranking'].includes(source?.type||''),ops=(Object.keys(labels) as ConditionOperator[]).filter(op=>numeric?!['contains','not_contains','starts_with','ends_with'].includes(op):choice?!['greater_than','greater_or_equal','less_than','less_or_equal','starts_with','ends_with'].includes(op):!['greater_than','greater_or_equal','less_than','less_or_equal'].includes(op));const operator=rule.operator||'equals';return <div className="condition-rule" key={i}>
+ <div className="condition-rule-heading"><b>{en?'Rule '+(i+1):'조건 '+(i+1)}</b><button type="button" className="icon-btn" aria-label={en?'Remove rule '+(i+1):'조건 '+(i+1)+' 삭제'} onClick={()=>save(rules.filter((_,n)=>n!==i))}><Trash2 size={16}/></button></div>
+ <label className="block-setting-label">{en?'Question':'문항'}<Select aria-label={en?'Condition question '+(i+1):'조건 참조 문항 '+(i+1)} value={rule.fieldId} onChange={e=>patch(i,{fieldId:e.target.value,operator:'equals',value:''})}>{eligible.map(f=><option key={f.id} value={f.id}>{f.label}</option>)}</Select></label>
+ <label className="block-setting-label">{en?'Comparison':'비교 방식'}<Select aria-label={en?'Comparison '+(i+1):'비교 방식 '+(i+1)} value={operator} onChange={e=>patch(i,{operator:e.target.value as ConditionOperator})}>{[...new Set([...ops,operator])].map(op=><option key={op} value={op}>{labels[op][en?0:1]}</option>)}</Select></label>
+ {!['is_empty','is_filled'].includes(operator)&&<label className="block-setting-label">{en?'Value':'비교 값'}{choice&&source?.options.length?<Select aria-label={en?'Condition value '+(i+1):'비교 값 '+(i+1)} value={rule.value} onChange={e=>patch(i,{value:e.target.value})}><option value="">{en?'Choose an answer':'답변 선택'}</option>{source.options.map(o=><option key={o} value={o}>{o}</option>)}</Select>:<input aria-label={en?'Condition value '+(i+1):'비교 값 '+(i+1)} inputMode={numeric?'decimal':undefined} maxLength={3000} value={rule.value} onChange={e=>patch(i,{value:e.target.value})}/>}</label>}
+ </div>})}
+ <div className="condition-actions"><button type="button" className="text-btn" disabled={rules.length>=10} onClick={()=>save([...rules,{fieldId:eligible[0].id,operator:'equals',value:''}])}><Plus size={15}/>{en?'Add rule':'조건 추가'}</button>{(rules.length>0||field.conditionNeedsReview)&&<button type="button" className="text-btn" onClick={()=>save([])}>{en?'Always show':'항상 표시로 변경'}</button>}</div>
+ <p className="condition-note">{en?'Hidden answers are excluded from submission. Empty checks only apply to visible questions. Up to 10 rules per block.':'숨겨진 답변은 제출에서 제외됩니다. 빈 답변 조건은 표시된 문항에만 적용됩니다. 블록당 최대 10개 조건을 설정할 수 있습니다.'}</p>
+ </div></details>
+}

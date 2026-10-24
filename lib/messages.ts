@@ -1,4 +1,7 @@
 export const english:Record<string,string>={
+'삭제된 참조 문항의 표시 조건을 검토해주세요.':'Review visibility rules that referenced a deleted question.',
+'조건 형식을 하나만 사용해주세요.':'Use one condition format per block.',
+'비교할 숫자를 입력해주세요.':'Enter a valid number to compare.',
   "비밀번호를 변경했어요.": "Password updated.",
   "메일로 비밀번호 재설정 링크를 보냈어요.": "Check your inbox for a password reset link.",
   "계정이 준비됐어요.": "Your account is ready.",

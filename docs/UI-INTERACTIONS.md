@@ -46,3 +46,8 @@ DOM event and ordering tests cover these behaviors. They do not substitute for c
 
 ## Respondent pages and validation
 Question labels default to 20px, input text to 18px, and input targets to 55px. Section headings stay in the same page unless Start on a new page is enabled. A page-break block creates an explicit boundary and provides local Next/Back labels. Design settings control global navigation copy, fill/outline, alignment, size and reading scale. Blur and Next validate before the final submission; returning to a previous page preserves answers. Phone inputs include a searchable custom country menu, national display and E.164 storage, with shared libphonenumber metadata validation on client and server. Keyboard focus goes to the first invalid input or the new page, with reduced-motion support.
+
+## Conditional visibility and full export
+Block menus expose a rule builder with field, comparison and value controls, plus AND/OR mode. Choice values use the custom option selector. Numeric fields show numeric comparisons; empty checks omit the value input. Up to ten flat rules are supported. Deleted references produce a visible review warning and block publication until the author chooses a replacement rule or Always show. Custom validation copy lives in field rules.
+
+Response exports show their own busy state and download all saved rows, independent of the loaded table and local search. Search/chart scope is explicitly labeled. In-flight responses are ignored after the selected form or account changes. Export errors do not produce a success toast or a downloaded partial file.

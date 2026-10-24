@@ -18,7 +18,7 @@ The SUPABASE_SECRET_KEY and INTEGRATION_ENCRYPTION_KEY must never use NEXT_PUBLI
 
 ## Product and design
 
-See docs/PRODUCT.md and docs/FEATURE-RESEARCH.md. The research matrix explicitly distinguishes implemented features from missing competitor features. This release is not full Tally/Google Forms parity or a verified large-scale SaaS.
+See docs/PRODUCT.md, docs/FEATURE-RESEARCH.md (93 audited requirements), docs/ROADMAP.md and docs/RELEASE-VERIFICATION.md. The research matrix explicitly distinguishes implemented features from missing competitor features. This release is not full Tally/Google Forms parity or a verified large-scale SaaS.
 
 The Atelier interface replaces the fixed sidebar with top navigation and a mobile bottom dock. Form types, selects, calendars, time and color controls use custom UI with keyboard support. The product chrome is monochrome, with locally drawn 24-unit SVG symbols in components/icons.tsx. Form-specific colors are separate from product controls. Fonts are self-hosted Pretendard under SIL OFL (public/fonts/LICENSE.txt). Motion is transform/opacity focused and honors prefers-reduced-motion.
 
@@ -64,3 +64,9 @@ No prior NEXT respondent data is included. Example forms are not collecting real
 ## Known limitations
 
 No billing, organization collaboration, file uploads, quiz scoring, advanced calculation engine, custom domains or email notification delivery yet. See the research matrix. Run load testing, abuse protection, observability and recovery exercises before claiming high-volume readiness.
+
+## Rules and response exports
+
+Block settings support up to ten visibility rules joined with AND/OR, including numeric, string, option membership and empty/answered comparisons. The client and server share the same evaluator. Deleting a referenced question requires an explicit visibility review before publication. Field settings allow a custom validation error message.
+
+The authenticated GET /api/v1/forms/:id/responses/export streams all saved responses as CSV using a timestamp/id cursor and an export cutoff. Current questions use normal columns; answers to removed questions retain their original labels in an Archived answers (JSON) column. Exports are not limited to the table page or local search filter. Search and charts still use loaded rows, and the UI says so. Background exports for very large datasets remain a roadmap item.

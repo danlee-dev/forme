@@ -14,6 +14,7 @@ type AppState = {
     remove: (id: string) => Promise<void>;
     request: (path: string, init?: RequestInit) => Promise<any>;
     refresh: () => Promise<void>;
+    download:(path:string)=>Promise<Blob>;
 };
 const Context = createContext<AppState | null>(null);
 export function Provider({ children }: {
@@ -31,6 +32,7 @@ export function Provider({ children }: {
     const request = useCallback(async (path: string, init: RequestInit = {}) => { const session = (await supabase?.auth.getSession())?.data.session; if (!session)
         throw Error(tr("로그인 후 사용할 수 있어요.")); const r = await fetch(path, { ...init, headers: { 'Content-Type': 'application/json', 'Accept-Language': locale, Authorization: 'Bearer ' + session.access_token, ...init.headers } }); const data = await r.json(); if (!r.ok)
         throw Error(data.error || tr("요청을 처리하지 못했어요.")); return data; }, [locale,tr]);
+    const download=useCallback(async(path:string)=>{const session=(await supabase?.auth.getSession())?.data.session;if(!session)throw Error(tr("로그인 후 사용할 수 있어요."));const response=await fetch(path,{headers:{Authorization:'Bearer '+session.access_token,'Accept-Language':locale}});if(!response.ok){const data=await response.json();throw Error(data.error||tr("요청을 처리하지 못했어요."))}return response.blob()},[locale,tr]);
     const refresh = useCallback(async () => { const data = await request('/api/v1/forms'); setForms(data.forms); }, [request]);
     useEffect(() => {
         let alive = true;
@@ -72,7 +74,7 @@ export function Provider({ children }: {
     const remove = useCallback(async (id: string) => { if (user)
         await request('/api/v1/forms/' + id, { method: 'DELETE' }); setForms(prev => { const next = prev.filter(x => x.id !== id); if (!user)
         localStorage.setItem('forme:guest', JSON.stringify(next)); return next; }); }, [user, request]);
-    return <Context.Provider value={{ forms, user, ready, notice, save, remove, request, refresh }}>{children}{toast && <div className="toast" role="status">{tr(toast)}<button aria-label={tr("알림 닫기")} onClick={() => setToast('')}>×</button></div>}</Context.Provider>;
+    return <Context.Provider value={{ forms, user, ready, notice, save, remove, request, download, refresh }}>{children}{toast && <div className="toast" role="status">{tr(toast)}<button aria-label={tr("알림 닫기")} onClick={() => setToast('')}>×</button></div>}</Context.Provider>;
 }
 export function useApp() { const c = useContext(Context); if (!c)
     throw Error('Provider missing'); return c; }
