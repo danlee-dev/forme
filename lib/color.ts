@@ -1,0 +1,2 @@
+// Choose the higher-contrast foreground for an arbitrary six-digit theme color.
+export function readableInk(hex:string){const channels=hex.slice(1).match(/.{2}/g)?.map(c=>{const v=parseInt(c,16)/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});if(!channels||channels.some(Number.isNaN))return '#ffffff';const l=.2126*channels[0]+.7152*channels[1]+.0722*channels[2];return l>.179?'#202021':'#ffffff'}
