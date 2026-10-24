@@ -1,91 +1,66 @@
 'use client';
 import {LocaleScope,useLocale} from './locale';
-import { readableInk } from '@/lib/color';
-import { Select, Temporal } from './controls';
-import { useState, useRef, useEffect, type CSSProperties } from 'react';
+import {readableInk} from '@/lib/color';
+import {Select,Temporal} from './controls';
+import {PhoneInput} from './phone-input';
+import type {CountryCode} from 'libphonenumber-js';
+import {useState,useRef,useEffect,type CSSProperties} from 'react';
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, Check, LoaderCircle, Star, LockKeyhole, RotateCcw } from './icons';
-import { type FormDocument, type Answers, isVisible, validateAnswers, type Field } from '@/lib/schema';
-import { Cover } from './ui';
-function FormRendererContent({ form, preview = false }: {
-    form: FormDocument;
-    preview?: boolean;
-}) {
-    const { t: tr, locale, date: formatDate, count: formatCount } = useLocale();
-    const [answers, setAnswers] = useState<Answers>({});
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [step, setStep] = useState(0);
-    const [busy, setBusy] = useState(false);
-    const [done, setDone] = useState(false);
-    const [message, setMessage] = useState('');
-    const [id, setId] = useState('');
-    const attempt = useRef<string | null>(null);
-    const honeypot = useRef<HTMLInputElement>(null);
-    const root = useRef<HTMLFormElement>(null);
-    const visibleAnswers: Answers = {};
-    const fields = form.fields.filter(f => { if (!isVisible(f, visibleAnswers))
-        return false; if (answers[f.id] !== undefined)
-        visibleAnswers[f.id] = answers[f.id]; return true; });
-    const questionFields = fields.filter(f => f.type !== 'section' && f.type !== 'hidden');
-    const active = questionFields[step];
-    const expired = Boolean(form.closesAt && Date.parse(form.closesAt) < Date.now());
-    const closed = !preview && (form.status !== 'published' || expired || form.isExample);
-    function update(id: string, value: Answers[string]) { setAnswers(a => ({ ...a, [id]: value })); setErrors(e => ({ ...e, [id]: '' })); }
-    function checkCurrent() { if (!active)
-        return true; const result = validateAnswers({ ...form, fields: [active] }, answers); setErrors(result.errors); return Object.keys(result.errors).length === 0; }
-    async function submit(e: React.FormEvent) { e.preventDefault(); if (closed || busy)
-        return; if (form.theme.layout === 'step' && step < questionFields.length - 1) {
-        if (checkCurrent())
-            setStep(s => s + 1);
-        return;
-    } const result = validateAnswers(form, answers); setErrors(result.errors); if (Object.keys(result.errors).length) {
-        if (form.theme.layout === 'step')
-            setStep(Math.max(0, questionFields.findIndex(f => result.errors[f.id])));
-        setTimeout(() => root.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(), 0);
-        return;
-    } if (preview) {
-        setDone(true);
-        return;
-    } setBusy(true); setMessage(''); try {
-        attempt.current ??= crypto.randomUUID();
-        const r = await fetch('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept-Language': locale }, body: JSON.stringify({ slug: form.slug, answers: result.answers, idempotencyKey: attempt.current, website: honeypot.current?.value || '' }) });
-        const d = await r.json();
-        if (!r.ok) {
-            if (d.errors)
-                setErrors(d.errors);
-            throw Error(d.error || tr("제출하지 못했어요. 다시 시도해주세요."));
-        }
-        setId(d.id);
-        setDone(true);
-        setAnswers({});
-    }
-    catch (e) {
-        setMessage((e as Error).message);
-    }
-    finally {
-        setBusy(false);
-    } }
-    useEffect(() => { const params = new URLSearchParams(location.search); const initial: Answers = {}; for (const f of form.fields) {
-        if (f.type === 'hidden') {
-            const v = params.get(f.placeholder || f.id);
-            if (v)
-                initial[f.id] = v.slice(0, 1000);
-        }
-    } setAnswers(a => ({ ...initial, ...a })); }, [form.id]);
-    const style = { '--form-accent': form.theme.accent, '--form-ink':readableInk(form.theme.background),'--form-muted':readableInk(form.theme.background)==='#ffffff'?'#b9b9c0':'#686870','--form-border':readableInk(form.theme.background)==='#ffffff'?'#55555e':'#dedee0','--form-field-bg':readableInk(form.theme.background)==='#ffffff'?'#ffffff0b':'#ffffff90','--form-on-accent': readableInk(form.theme.accent), '--form-visible-accent':readableInk(form.theme.background)==='#ffffff'?(readableInk(form.theme.accent)==='#ffffff'?'#dedee4':form.theme.accent):(readableInk(form.theme.accent)==='#202021'?'#38383b':form.theme.accent), '--form-bg': form.theme.background, '--form-radius': form.theme.radius === 'square' ? '2px' : form.theme.radius === 'round' ? '24px' : '10px' } as CSSProperties;
-    if (done)
-        return <div className="public-form success-page" style={style}><div className="success-check"><Check size={32}/></div><div className="eyebrow">{preview ? 'PREVIEW COMPLETE' : 'THANK YOU'}</div><h1>{preview ? tr("미리보기 완료!") : form.thankYouTitle}</h1><p>{preview ? tr("미리보기 응답은 저장하지 않았어요.") : form.thankYouMessage}</p>{id && <small className="muted">{tr("접수 번호:")}{id.slice(0, 8)}</small>}{preview && <button className="btn" onClick={() => { setDone(false); setStep(0); }}><RotateCcw size={15}/>{tr("다시 보기")}</button>}<Link href="/" className="powered">Made with <b>forme.</b></Link></div>;
-    return <div className={'public-form font-' + form.theme.font + (preview ? ' is-preview' : '')} style={style}>{form.theme.cover !== 'none' && <Cover kind={form.theme.cover}/>}<div className="form-inner"><div className="form-emoji">{form.emoji}</div><div className="eyebrow">{form.isExample ? 'A FORME EXAMPLE' : 'A LITTLE SPACE FOR YOUR STORY'}</div><h1>{form.title}</h1><p className="form-intro">{form.description}</p>{closed && <div className="closed-note" role="status"><LockKeyhole size={18}/><div><b>{form.isExample ? tr("운영 검토용 예시입니다.") : tr("현재 응답 접수가 중단되어 있어요.")}</b><p>{form.isExample ? tr("디자인과 문항을 살펴보세요. 아래 입력은 체험할 수 있지만 실제 제출은 되지 않습니다.") : tr("운영자가 신청을 다시 열면 참여할 수 있어요.")}</p></div></div>}{form.theme.layout==='step'&&<><div className="form-meta"><span>{formatCount(questionFields.length,'question')}{locale==='en'?' · * Required':' · 필수 항목에는 * 표시'}</span><span>{Math.min(step+1,questionFields.length)}/{questionFields.length}</span></div><div className="form-progress"><span style={{ width: (questionFields.length ? Math.min(step+1,questionFields.length) / questionFields.length * 100 : 0) + '%' }}/></div></>}<form ref={root} noValidate onSubmit={submit} id="main-content"><div className="honeypot" aria-hidden="true"><label>Website<input ref={honeypot} tabIndex={-1} autoComplete="off" name="website"/></label></div>{(form.theme.layout === 'step' ? (active ? [active] : []) : fields).map(f => <FieldInput key={f.id} field={f} value={answers[f.id]} error={errors[f.id]} onChange={v => update(f.id, v)}/>)}{message && <div className="error-banner" role="alert">{tr(message)}</div>}<div className="form-submit-row">{form.theme.layout === 'step' && step > 0 && <button className="btn" type="button" onClick={() => setStep(s => s - 1)}><ArrowLeft size={16}/>{tr("이전")}</button>}<button className="btn form-submit" type="submit" disabled={busy || closed}>{busy ? <LoaderCircle className="spin" size={17}/> : null}{closed ? tr("현재 신청을 받지 않습니다") : form.theme.layout === 'step' && step < questionFields.length - 1 ? tr("다음") : form.theme.buttonLabel}<ArrowRight size={17}/></button></div>{preview && <p className="tiny muted">{tr("미리보기 · 제출해도 응답이 저장되지 않습니다.")}</p>}</form><div className="public-footer"><Link href="/" className="powered">Made with <b>forme.</b></Link></div></div></div>;
+import {ArrowRight,ArrowLeft,Check,LoaderCircle,Star,LockKeyhole,RotateCcw} from './icons';
+import {type FormDocument,type Answers,validateAnswers,type Field} from '@/lib/schema';
+import {formPages,isQuestion} from '@/lib/pages';
+import {Cover} from './ui';
+function FormRendererContent({form,preview=false}:{form:FormDocument;preview?:boolean}){
+ const {t:tr,locale}=useLocale();const en=locale==='en';
+ const [answers,setAnswers]=useState<Answers>({}),[errors,setErrors]=useState<Record<string,string>>({}),[page,setPage]=useState(0),[busy,setBusy]=useState(false),[done,setDone]=useState(false),[message,setMessage]=useState(''),[id,setId]=useState('');
+ const touched=useRef(new Set<string>()),attempt=useRef<string|null>(null),honeypot=useRef<HTMLInputElement>(null),root=useRef<HTMLFormElement>(null),pageRoot=useRef<HTMLDivElement>(null),initialPage=useRef(true),focusError=useRef<string|null>(null);
+ const pages=formPages(form,answers);const index=Math.min(page,pages.length-1),current=pages[index];const hasNext=index<pages.length-1;
+ const closed=!preview&&(form.status!=='published'||Boolean(form.closesAt&&Date.parse(form.closesAt)<Date.now())||form.isExample);
+ function focusInvalid(fieldId:string){const el=document.getElementById(fieldId);const target=el?.matches('input,textarea,button')?el:el?.querySelector<HTMLElement>('input[type=tel]')||el?.querySelector<HTMLElement>('input,textarea,button')||el;target?.focus();target?.scrollIntoView({block:'center',behavior:'auto'})}
+ useEffect(()=>{if(initialPage.current){initialPage.current=false;return}pageRoot.current?.focus({preventScroll:true});pageRoot.current?.scrollIntoView({block:'start',behavior:'auto'});if(focusError.current){focusInvalid(focusError.current);focusError.current=null}},[index]);
+ function update(fieldId:string,value:Answers[string]){const next={...answers,[fieldId]:value};setAnswers(next);if(touched.current.has(fieldId)||errors[fieldId]){const error=validateAnswers(form,next).errors[fieldId]||'';setErrors(prev=>({...prev,[fieldId]:error}))}}
+ function blur(fieldId:string){touched.current.add(fieldId);const error=validateAnswers(form,answers).errors[fieldId]||'';setErrors(prev=>({...prev,[fieldId]:error}))}
+ async function submit(event:React.FormEvent){
+  event.preventDefault();if(busy)return;
+  const checked=validateAnswers(form,answers);
+  const visibleIds=new Set(current.fields.filter(isQuestion).map(f=>f.id));
+  const relevant=hasNext?Object.fromEntries(Object.entries(checked.errors).filter(([key])=>visibleIds.has(key))):checked.errors;
+  for(const key of visibleIds)touched.current.add(key);setErrors(prev=>({...prev,...relevant}));
+  if(Object.keys(relevant).length){const first=Object.keys(relevant)[0];const destination=pages.findIndex(p=>p.fields.some(f=>f.id===first));if(destination>=0&&destination!==index){focusError.current=first;setPage(destination)}else requestAnimationFrame(()=>focusInvalid(first));return}
+  if(hasNext){setErrors({});setPage(index+1);return}
+  if(closed)return;
+  if(preview){setDone(true);return}
+  setBusy(true);setMessage('');
+  try{attempt.current??=crypto.randomUUID();const response=await fetch('/api/submit',{method:'POST',headers:{'Content-Type':'application/json','Accept-Language':locale},body:JSON.stringify({slug:form.slug,answers:checked.answers,idempotencyKey:attempt.current,website:honeypot.current?.value||''})});const result=await response.json();if(!response.ok){if(result.errors)setErrors(result.errors);throw Error(result.error||tr('제출하지 못했어요. 다시 시도해주세요.'))}setId(result.id);setDone(true);setAnswers({})}catch(error){setMessage((error as Error).message)}finally{setBusy(false)}
+ }
+ useEffect(()=>{const params=new URLSearchParams(location.search);const initial:Answers={};for(const f of form.fields)if(f.type==='hidden'){const value=params.get(f.placeholder||f.id);if(value)initial[f.id]=value.slice(0,1000)}setAnswers(prev=>({...initial,...prev}))},[form.id]);
+ const dark=readableInk(form.theme.background)==='#ffffff';
+ const style={'--form-accent':form.theme.accent,'--form-ink':readableInk(form.theme.background),'--form-muted':dark?'#c2c2c9':'#55555f','--form-border':dark?'#666670':'#c8c8cf','--form-field-bg':dark?'#ffffff0b':'#ffffffb0','--form-on-accent':readableInk(form.theme.accent),'--form-visible-accent':dark?(readableInk(form.theme.accent)==='#ffffff'?'#dedee4':form.theme.accent):(readableInk(form.theme.accent)==='#202021'?'#38383b':form.theme.accent),'--form-bg':form.theme.background,'--form-radius':form.theme.radius==='square'?'3px':form.theme.radius==='round'?'22px':'10px'} as CSSProperties;
+ const nextText=current.nextLabel||form.theme.nextButtonLabel||(en?'Next':'다음');
+ const backText=current.backLabel||form.theme.backButtonLabel||(en?'Back':'이전');
+ if(done)return <div className="public-form success-page" style={style}><div className="success-check"><Check size={32}/></div><h1>{preview?tr('미리보기 완료!'):form.thankYouTitle}</h1><p>{preview?tr('미리보기 응답은 저장하지 않았어요.'):form.thankYouMessage}</p>{id&&<small>{tr('접수 번호:')}{id.slice(0,8)}</small>}{preview&&<button className="btn" onClick={()=>{setDone(false);setPage(0)}}><RotateCcw size={16}/>{tr('다시 보기')}</button>}<Link href="/" className="powered">Made with <b>forme.</b></Link></div>;
+ return <div className={'public-form font-'+form.theme.font+' text-'+(form.theme.fontSize||'large')+(preview?' is-preview':'')} style={style}>{index===0&&form.theme.cover!=='none'&&<Cover kind={form.theme.cover}/>}<div className="form-inner">
+ {index===0?<header className="respondent-header">{form.emoji&&<div className="form-emoji">{form.emoji}</div>}<h1>{form.title}</h1>{form.description&&<p className="form-intro">{form.description}</p>}{closed&&<div className="closed-note" role="status"><LockKeyhole size={19}/><div><b>{form.isExample?tr('운영 검토용 예시입니다.'):tr('현재 응답 접수가 중단되어 있어요.')}</b><p>{form.isExample?tr('디자인과 문항을 살펴보세요. 아래 입력은 체험할 수 있지만 실제 제출은 되지 않습니다.'):tr('운영자가 신청을 다시 열면 참여할 수 있어요.')}</p></div></div>}</header>:<p className="continuation-title">{form.title}</p>}
+ {pages.length>1&&<div className="page-progress" aria-label={en?'Form progress':'폼 진행 상황'}><div><b>{en?'Page '+(index+1)+' of '+pages.length:(index+1)+' / '+pages.length+' 페이지'}</b><span>{Math.round((index+1)/pages.length*100)}%</span></div><div className="page-progress-track"><span style={{width:(index+1)/pages.length*100+'%'}}/></div></div>}
+ <form ref={root} noValidate onSubmit={submit} id="main-content"><div className="honeypot" aria-hidden="true"><label>Website<input ref={honeypot} tabIndex={-1} autoComplete="off"/></label></div>
+ <div ref={pageRoot} key={current.id} className="form-page" tabIndex={-1} aria-label={en?'Form page '+(index+1):'폼 '+(index+1)+'페이지'}>{current.fields.map(f=><FieldInput key={f.id} field={f} value={answers[f.id]} error={errors[f.id]} onChange={v=>update(f.id,v)} onBlur={()=>blur(f.id)}/>)}</div>
+ {message&&<div className="error-banner" role="alert">{tr(message)}</div>}
+ <div className={'form-submit-row nav-align-'+(form.theme.buttonAlign||'left')+' nav-size-'+(form.theme.buttonSize||'comfortable')}>
+ {index>0&&<button className="form-back" type="button" disabled={busy} onClick={()=>{setErrors({});setPage(index-1)}}><ArrowLeft size={19}/>{backText}</button>}
+ <button className={'form-submit nav-style-'+(form.theme.buttonStyle||'solid')} type="submit" disabled={busy||(!hasNext&&closed)}>{busy&&<LoaderCircle className="spin" size={19}/>}<span>{hasNext?nextText:closed?tr('현재 신청을 받지 않습니다'):form.theme.buttonLabel}</span><ArrowRight size={19}/></button></div>
+ {preview&&<p className="preview-notice">{tr('미리보기 · 제출해도 응답이 저장되지 않습니다.')}</p>}</form><div className="public-footer"><Link href="/" className="powered">Made with <b>forme.</b></Link></div></div></div>
 }
-function FieldInput({ field: f, value, error, onChange }: {
+
+function FieldInput({ field: f, value, error, onChange,onBlur }: {
     field: Field;
     value: Answers[string] | undefined;
     error?: string;
-    onChange: (v: Answers[string]) => void;
-}) { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); if (f.type === 'hidden')
+    onChange: (v: Answers[string]) => void;onBlur:()=>void;
+}) { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); if (f.type === 'hidden'||f.type==='page_break')
     return null; if (f.type === 'section')
-    return <section className="form-section"><h2>{f.label}</h2>{f.description && <p>{f.description}</p>}</section>; const props = { id: f.id, 'aria-describedby': f.id + '-hint ' + f.id + '-error', 'aria-invalid': Boolean(error), 'aria-required': f.required }; return <div className={'form-field ' + (error ? 'has-error' : '')}><label className="field-label" htmlFor={f.id}>{f.label}{f.required && <span className="required-star"> *</span>}</label>{f.description && <p id={f.id + '-hint'} className="field-hint">{f.description}</p>}{f.type === 'dropdown' ? <Select {...props} value={String(value ?? '')} onChange={e => onChange(e.target.value)}><option value="">{tr("선택해주세요")}</option>{f.options.map(o => <option key={o} value={o}>{o}</option>)}</Select> : f.type === 'ranking' ? <div className="ranking-list" id={f.id}>{(Array.isArray(value) ? value : f.options).map((o, i, order) => <div key={o}><span>{i + 1}</span><b>{o}</b><button type="button" disabled={i === 0} aria-label={o + tr(" 순위 올리기")} onClick={() => { const list = [...order]; [list[i - 1], list[i]] = [list[i], list[i - 1]]; onChange(list); }}>↑</button><button type="button" disabled={i === order.length - 1} aria-label={o + tr(" 순위 내리기")} onClick={() => { const list = [...order]; [list[i + 1], list[i]] = [list[i], list[i + 1]]; onChange(list); }}>↓</button></div>)}{!value && <button type="button" className="text-btn" onClick={() => onChange([...f.options])}>{tr("이 순서로 선택")}</button>}</div> : f.type === 'linear_scale' ? <div {...props} className="linear-scale" role="radiogroup" tabIndex={-1} aria-label={f.label} onKeyDown={e => { if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key))
-    return; e.preventDefault(); const next = e.key === 'Home' ? 0 : e.key === 'End' ? 10 : ((Number(value) || 0) + (['ArrowRight', 'ArrowDown'].includes(e.key) ? 1 : 10)) % 11; onChange(next); e.currentTarget.querySelectorAll<HTMLButtonElement>('button')[next]?.focus(); }}>{Array.from({ length: 11 }, (_, n) => <button key={n} type="button" role="radio" tabIndex={value === n || value === undefined && n === 0 ? 0 : -1} aria-checked={value === n} className={value === n ? 'chosen' : ''} onClick={() => onChange(n)}>{n}</button>)}</div> : f.type === 'date' || f.type === 'time' ? <Temporal {...props} type={f.type} value={String(value ?? '')} onChange={e => onChange(e.target.value)}/> : f.type === 'long_text' ? <textarea {...props} value={String(value ?? '')} placeholder={f.placeholder} maxLength={5000} rows={4} onChange={e => onChange(e.target.value)}/> : f.type === 'select' || f.type === 'multi_select' ? <div className="choice-list" role={f.type === 'select' ? 'radiogroup' : 'group'} aria-label={f.label} id={f.id}>{f.options.map((option, i) => { const selected = Array.isArray(value) ? value.includes(option) : value === option; return <label className={'choice ' + (selected ? 'chosen' : '')} key={option + '-' + i}><input type={f.type === 'select' ? 'radio' : 'checkbox'} name={f.id} value={option} checked={selected} onChange={() => onChange(f.type === 'select' ? option : selected ? (Array.isArray(value) ? value : []).filter(v => v !== option) : [...(Array.isArray(value) ? value : []), option])}/><span className="choice-letter">{selected ? <Check size={13}/> : String.fromCharCode(65 + i)}</span>{option}</label>; })}</div> : f.type === 'rating' ? <div {...props} className="rating-input" role="radiogroup" tabIndex={-1} aria-label={f.label} onKeyDown={e => { if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key))
-    return; e.preventDefault(); const next = e.key === 'Home' ? 1 : e.key === 'End' ? 5 : ((Number(value) || 1) - 1 + (['ArrowRight', 'ArrowDown'].includes(e.key) ? 1 : 4)) % 5 + 1; onChange(next); e.currentTarget.querySelectorAll<HTMLButtonElement>('button')[next - 1]?.focus(); }}>{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" role="radio" tabIndex={value === n || value === undefined && n === 1 ? 0 : -1} aria-checked={value === n} aria-label={n + tr("점")} onClick={() => onChange(n)} className={Number(value) >= n ? 'filled' : ''}><Star size={30}/></button>)}</div> : f.type === 'consent' ? <label className="consent-input"><input {...props} type="checkbox" checked={value === true} onChange={e => onChange(e.target.checked)}/>{tr("위 내용을 확인하고 동의합니다.")}</label> : <input {...props} type={f.type === 'short_text' ? 'text' : f.type === 'phone' ? 'tel' : f.type} value={String(value ?? '')} placeholder={f.placeholder} maxLength={5000} onChange={e => onChange(f.type === 'number' && e.target.value !== '' ? Number(e.target.value) : e.target.value)} autoComplete={f.type === 'email' ? 'email' : f.type === 'phone' ? 'tel' : 'off'}/>}<p id={f.id + '-error'} className="field-error" role={error ? 'alert' : undefined}>{tr(error)}</p></div>; }
+    return <section className="form-section"><h2>{f.label}</h2>{f.description && <p>{f.description}</p>}</section>; const props = { onBlur, id: f.id, 'aria-describedby': f.id + '-hint ' + f.id + '-error', 'aria-invalid': Boolean(error), 'aria-required': f.required }; return <div className={'form-field ' + (error ? 'has-error' : '')}><label className="field-label" htmlFor={f.id}>{f.label}{f.required && <span className="required-star"> *</span>}</label>{f.description && <p id={f.id + '-hint'} className="field-hint">{f.description}</p>}{f.type==='phone'?<PhoneInput id={f.id} label={f.label} value={String(value??'')} country={(f.validation?.phoneCountry||'KR') as CountryCode} onChange={onChange} onBlur={onBlur} error={Boolean(error)} describedBy={f.id+'-hint '+f.id+'-error'}/>:f.type === 'dropdown' ? <Select {...props} value={String(value ?? '')} onChange={e => onChange(e.target.value)}><option value="">{tr("선택해주세요")}</option>{f.options.map(o => <option key={o} value={o}>{o}</option>)}</Select> : f.type === 'ranking' ? <div className="ranking-list" {...props} tabIndex={-1}>{(Array.isArray(value) ? value : f.options).map((o, i, order) => <div key={o}><span>{i + 1}</span><b>{o}</b><button type="button" disabled={i === 0} aria-label={o + tr(" 순위 올리기")} onClick={() => { const list = [...order]; [list[i - 1], list[i]] = [list[i], list[i - 1]]; onChange(list); }}>↑</button><button type="button" disabled={i === order.length - 1} aria-label={o + tr(" 순위 내리기")} onClick={() => { const list = [...order]; [list[i + 1], list[i]] = [list[i], list[i + 1]]; onChange(list); }}>↓</button></div>)}{!value && <button type="button" className="text-btn" onClick={() => onChange([...f.options])}>{tr("이 순서로 선택")}</button>}</div> : f.type === 'linear_scale' ? <div {...props} className="linear-scale" role="radiogroup" tabIndex={-1} aria-label={f.label} onKeyDown={e => { if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key))
+    return; e.preventDefault(); const next = e.key === 'Home' ? 0 : e.key === 'End' ? 10 : ((Number(value) || 0) + (['ArrowRight', 'ArrowDown'].includes(e.key) ? 1 : 10)) % 11; onChange(next); e.currentTarget.querySelectorAll<HTMLButtonElement>('button')[next]?.focus(); }}>{Array.from({ length: 11 }, (_, n) => <button key={n} type="button" role="radio" tabIndex={value === n || value === undefined && n === 0 ? 0 : -1} aria-checked={value === n} className={value === n ? 'chosen' : ''} onClick={() => onChange(n)}>{n}</button>)}</div> : f.type === 'date' || f.type === 'time' ? <Temporal {...props} type={f.type} value={String(value ?? '')} onChange={e => onChange(e.target.value)}/> : f.type === 'long_text' ? <textarea {...props} value={String(value ?? '')} placeholder={f.placeholder} maxLength={f.validation?.maxLength||5000} rows={4} onChange={e => onChange(e.target.value)}/> : f.type === 'select' || f.type === 'multi_select' ? <div className="choice-list" {...props} tabIndex={-1} role={f.type === 'select' ? 'radiogroup' : 'group'} aria-label={f.label}>{f.options.map((option, i) => { const selected = Array.isArray(value) ? value.includes(option) : value === option; return <label className={'choice ' + (selected ? 'chosen' : '')} key={option + '-' + i}><input type={f.type === 'select' ? 'radio' : 'checkbox'} name={f.id} value={option} checked={selected} onChange={() => onChange(f.type === 'select' ? option : selected ? (Array.isArray(value) ? value : []).filter(v => v !== option) : [...(Array.isArray(value) ? value : []), option])}/><span className="choice-letter">{selected ? <Check size={13}/> : String.fromCharCode(65 + i)}</span>{option}</label>; })}</div> : f.type === 'rating' ? <div {...props} className="rating-input" role="radiogroup" tabIndex={-1} aria-label={f.label} onKeyDown={e => { if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key))
+    return; e.preventDefault(); const next = e.key === 'Home' ? 1 : e.key === 'End' ? 5 : ((Number(value) || 1) - 1 + (['ArrowRight', 'ArrowDown'].includes(e.key) ? 1 : 4)) % 5 + 1; onChange(next); e.currentTarget.querySelectorAll<HTMLButtonElement>('button')[next - 1]?.focus(); }}>{[1, 2, 3, 4, 5].map(n => <button key={n} type="button" role="radio" tabIndex={value === n || value === undefined && n === 1 ? 0 : -1} aria-checked={value === n} aria-label={n + tr("점")} onClick={() => onChange(n)} className={Number(value) >= n ? 'filled' : ''}><Star size={30}/></button>)}</div> : f.type === 'consent' ? <label className="consent-input"><input {...props} type="checkbox" checked={value === true} onChange={e => onChange(e.target.checked)}/>{tr("위 내용을 확인하고 동의합니다.")}</label> : <input {...props} type={f.type === 'short_text'||f.type==='number' ? 'text' : f.type} inputMode={f.type==='number'?'decimal':f.type==='email'?'email':f.type==='url'?'url':undefined} value={String(value ?? '')} placeholder={f.placeholder} maxLength={f.validation?.maxLength||5000} onChange={e => onChange(e.target.value)} autoComplete={f.type === 'email' ? 'email' : 'off'}/>}<p id={f.id + '-error'} className="field-error" role={error ? 'alert' : undefined}>{tr(error)}</p></div>; }
+
 
 export function FormRenderer(props:{form:FormDocument;preview?:boolean}){const {locale}=useLocale();const language=props.form.theme.language;return <LocaleScope locale={language&&language!=='auto'?language:locale}><div lang={language&&language!=='auto'?language:locale}><FormRendererContent {...props}/></div></LocaleScope>}

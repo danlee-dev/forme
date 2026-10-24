@@ -40,6 +40,9 @@ Questions are edited directly on a white document canvas. Block controls live in
 
 Choices support Enter to insert the next option. IME composition is excluded from structural shortcuts. Titles grow with their content. Descriptions appear on demand. Cmd/Ctrl+S saves; Cmd/Ctrl+Z and Shift+Z use draft history. Empty titles receive recoverable draft names. Cloud saving and publishing remain explicit.
 
-Published forms use the same document rhythm. Repeated section dividers and classic-layout progress metadata are removed. A progress indicator remains for one-question-at-a-time forms.
+Published forms use the same document rhythm. Repeated section dividers and classic-layout progress metadata are removed. A progress indicator remains for multi-page and one-question-at-a-time forms.
 
 DOM event and ordering tests cover these behaviors. They do not substitute for cross-browser visual review.
+
+## Respondent pages and validation
+Question labels default to 20px, input text to 18px, and input targets to 55px. Section headings stay in the same page unless Start on a new page is enabled. A page-break block creates an explicit boundary and provides local Next/Back labels. Design settings control global navigation copy, fill/outline, alignment, size and reading scale. Blur and Next validate before the final submission; returning to a previous page preserves answers. Phone inputs include a searchable custom country menu, national display and E.164 storage, with shared libphonenumber metadata validation on client and server. Keyboard focus goes to the first invalid input or the new page, with reduced-motion support.

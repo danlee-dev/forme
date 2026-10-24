@@ -24,8 +24,9 @@ type Props = {
     'aria-describedby'?: string;
     'aria-invalid'?: boolean;
     'aria-required'?: boolean;
+    onBlur?:()=>void;
 };
-export function Select({ children, value = '', onChange, className = '', ...props }: Props) {
+export function Select({ children, value = '', onChange, className = '', onBlur, ...props }: Props) {
     const { t: tr, locale, date: formatDate, count: formatCount } = useLocale();
     const options = Children.toArray(children).filter(isValidElement<Option>).map(c => c.props);
     const [open, setOpen] = useState(false), [query, setQuery] = useState(''), [active, setActive] = useState(0);
@@ -35,7 +36,7 @@ export function Select({ children, value = '', onChange, className = '', ...prop
     const filtered = options.filter(o => !o.disabled && String(o.children).toLowerCase().includes(query.toLowerCase()));
     function pick(o: Option) { onChange?.({ target: { value: o.value } }); setOpen(false); }
     return <Popover.Root open={open} onOpenChange={v => { setContainer(trigger.current?.closest('dialog') || undefined); setOpen(v); setQuery(''); setActive(Math.max(0, options.findIndex(o => o.value === value))); }}>
- <Popover.Trigger ref={trigger} type="button" {...props} className={'custom-select ' + className} aria-haspopup="listbox"><span>{options.find(o => o.value === value)?.children || tr("선택해주세요")}</span><ChevronDown size={15}/></Popover.Trigger>
+ <Popover.Trigger ref={trigger} type="button" {...props} onBlur={()=>{if(!open)onBlur?.()}} className={'custom-select ' + className} aria-haspopup="listbox"><span>{options.find(o => o.value === value)?.children || tr("선택해주세요")}</span><ChevronDown size={15}/></Popover.Trigger>
  <Popover.Portal container={container}><Popover.Content className="select-popover" sideOffset={8} collisionPadding={12} align="start">
  <label className="select-search"><Search size={17}/><input autoFocus value={query} aria-label={(props['aria-label'] || tr("항목")) + ' ' + tr("검색")} role="combobox" aria-autocomplete="list" aria-expanded aria-controls={id} aria-activedescendant={filtered[active] ? id + '-' + active : undefined} placeholder={tr("검색하거나 선택하세요")} onChange={e => { setQuery(e.target.value); setActive(0); }} onKeyDown={e => { if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
         e.preventDefault();
@@ -65,7 +66,7 @@ export function Color({ value, onChange, 'aria-label': label = '색상 선택' }
     return <Popover.Root onOpenChange={() => { setHex(value); setContainer(ref.current?.closest('dialog') || undefined); }}><Popover.Trigger ref={ref} type="button" className="color-trigger" aria-label={tr(label)}><i style={{ background: value }}/><span>{value.toUpperCase()}</span></Popover.Trigger><Popover.Portal container={container}><Popover.Content className="select-popover color-popover" sideOffset={8} collisionPadding={12}><b>{tr("원하는 색상")}</b><div className="custom-palette">{['#242424', '#ffffff', '#f5f2eb', '#8b3043', '#3e6959', '#315e83', '#7465a0', '#dc5a46'].map(c => <button type="button" key={c} aria-label={c} aria-pressed={value === c} style={{ background: c }} onClick={() => { setHex(c); onChange({ target: { value: c } }); }}>{value === c && <Check size={17} style={{ color: readableInk(c) }}/>}</button>)}</div><label>HEX<input aria-label={tr("색상 코드")} value={hex} maxLength={7} onChange={e => { setHex(e.target.value); if (/^#[a-f0-9]{6}$/i.test(e.target.value))
         onChange({ target: { value: e.target.value } }); }}/></label><small>{tr("예: #242424")}</small></Popover.Content></Popover.Portal></Popover.Root>;
 }
-type TemporalProps = {
+type TemporalProps = {onBlur?:()=>void;
     type: 'date' | 'time' | 'datetime-local';
     value: string;
     onChange: (e: {
@@ -79,7 +80,7 @@ type TemporalProps = {
     'aria-invalid'?: boolean;
     'aria-required'?: boolean;
 };
-export function Temporal({ type, value, onChange, ...props }: TemporalProps) {
+export function Temporal({ type, value, onChange, onBlur, ...props }: TemporalProps) {
     const { t: tr, locale, date: formatDate, count: formatCount } = useLocale();
     const ref = useRef<HTMLButtonElement>(null);
     const [open, setOpen] = useState(false);
@@ -107,7 +108,7 @@ export function Temporal({ type, value, onChange, ...props }: TemporalProps) {
             setMonth(d.getMonth());
         }
     } setOpen(v); }}>
- <Popover.Trigger type="button" ref={ref} {...props} className="temporal-trigger"><span>{value ? type==='time'?value:formatDate(new Date(type==='date'?value+'T12:00':value),{year:'numeric',month:'short',day:'numeric',...(type==='datetime-local'?{hour:'numeric',minute:'2-digit'}:{})}) : type === 'time' ? tr("시간 선택") : type === 'date' ? tr("날짜 선택") : tr("날짜와 시간 선택")}</span><QuestionIcon type={type === 'time' ? 'time' : 'date'} size={18}/></Popover.Trigger>
+ <Popover.Trigger type="button" ref={ref} {...props} onBlur={()=>{if(!open)onBlur?.()}} className="temporal-trigger"><span>{value ? type==='time'?value:formatDate(new Date(type==='date'?value+'T12:00':value),{year:'numeric',month:'short',day:'numeric',...(type==='datetime-local'?{hour:'numeric',minute:'2-digit'}:{})}) : type === 'time' ? tr("시간 선택") : type === 'date' ? tr("날짜 선택") : tr("날짜와 시간 선택")}</span><QuestionIcon type={type === 'time' ? 'time' : 'date'} size={18}/></Popover.Trigger>
  <Popover.Portal container={container}><Popover.Content className="select-popover calendar-popover" sideOffset={8} collisionPadding={12} align="start" aria-label={tr("날짜와 시간 선택")}>
  {type !== 'time' && <><div className="calendar-heading"><button type="button" aria-label={tr("이전 달")} onClick={() => navigate(-1)}>‹</button><Select aria-label={tr("연도")} value={String(year)} onChange={e => setYear(Number(e.target.value))}>{Array.from({ length: 201 }, (_, i) => year - 100 + i).map(y => <option key={y} value={String(y)}>{String(y)}</option>)}</Select><Select aria-label={tr("월")} value={String(month)} onChange={e => setMonth(Number(e.target.value))}>{Array.from({ length: 12 }, (_, i) => <option key={i} value={String(i)}>{new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', {month:'short'}).format(new Date(2024,i,1))}</option>)}</Select><button type="button" aria-label={tr("다음 달")} onClick={() => navigate(1)}>›</button></div><div className="calendar-weekdays" aria-hidden="true">{Array.from({length:7},(_,i)=>new Intl.DateTimeFormat(locale==='ko'?'ko-KR':'en-US',{weekday:'short'}).format(new Date(2024,0,7+i))).map(d => <span key={d}>{d}</span>)}</div><div className="calendar-grid">{cells}</div></>}
  {type !== 'date' && <div className="time-options"><QuestionIcon type="time" size={18}/><Select aria-label={tr("시")} value={hour || '12'} onChange={e => changeTime(e.target.value, minute || '00')}>{Array.from({ length: 24 }, (_, i) => <option key={i} value={pad(i)}>{pad(i) + (locale === 'ko' ? '시' : '')}</option>)}</Select><Select aria-label={tr("분")} value={minute || '00'} onChange={e => changeTime(hour || '12', e.target.value)}>{Array.from({ length: 60 }, (_, i) => <option key={i} value={pad(i)}>{pad(i) + (locale === 'ko' ? '분' : '')}</option>)}</Select></div>}

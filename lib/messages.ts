@@ -468,5 +468,9 @@ export const english:Record<string,string>={
   "폼이 변경됐어요. 최신 상태에서 다시 시도해주세요.": "The form changed. Refresh and try again.",
   "지원하지 않는 작업이에요.": "Unsupported action.",
   "복구할 버전을 선택해주세요.": "Choose a version to restore.",
-  "버전을 찾을 수 없어요.": "Version not found."
+  "버전을 찾을 수 없어요.": "Version not found.",
+  "페이지 나누기": "Page break",
+  "국가번호와 전화번호 형식을 확인해주세요.": "Check the country code and enter a valid phone number.",
+  "정수로 입력해주세요.": "Enter a whole number.",
+  "최솟값은 최댓값보다 클 수 없어요.": "Minimum must not exceed maximum."
 };

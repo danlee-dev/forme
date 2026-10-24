@@ -3,6 +3,9 @@
 2026-10-25 공식 자료 기준. 전체 기능과 완전한 동등성을 달성했다고 주장하지 않는다.
 
 출처:
+- https://tally.so/help/how-to-create-a-multi-step-form
+- https://tally.so/help/phone-number
+- https://tally.so/help/number
 - https://tally.so/help/features
 - https://tally.so/help/conditional-form-logic
 - https://tally.so/help/form-calculator
@@ -19,6 +22,8 @@
 | 편집 | 추가/삭제/복제/순서/필수/설명/입력안내 | 구현 |
 | 공개 버전 | 초안·게시 분리/재게시/중단/슬러그 | 구현 |
 | 디자인 | 색/배경/서체/커버/모서리/한 질문씩 모드 | 구현 |
+| 페이지 | 섹션·페이지 나누기·다음/이전·페이지별 검사·문구/버튼 커스텀 | 구현 |
+| 입력 검사 | 국가별 전화번호·E.164·문자 길이·숫자 범위/정수·선택 개수 | 구현 |
 | 조건 | 앞 문항 답변과 같은 경우 표시 | 구현 |
 | 제출 | 검증/정원/마감/원자적 카운트/멱등성 | 구현 |
 | 응답 | 표/상세/요약/검색/CSV/페이지 로드 | 구현 |

@@ -4,7 +4,7 @@ import {useId,useRef,useState,type ReactNode} from 'react';
 import {fieldTypes,fieldLabels,type Field} from '@/lib/schema';
 import {useLocale} from './locale';
 import {Plus,Search,QuestionIcon} from './icons';
-const help:Record<Field['type'],[string,string]>={
+const help:Record<Field['type'],[string,string]>={page_break:['Continue on a new page','다음 페이지로 나누기'],
  short_text:['A short, single-line answer','한 줄로 간단하게 답변받기'],long_text:['Room for a longer story','긴 이야기를 자유롭게 받기'],email:['An email address','이메일 주소 받기'],phone:['A phone number','국가번호를 포함한 연락처 받기'],number:['A numeric answer','숫자로 답변받기'],date:['Choose a calendar date','달력에서 날짜 선택'],url:['A website or link','웹사이트 주소 받기'],select:['Choose one option','하나의 선택지 고르기'],multi_select:['Choose several options','여러 선택지 고르기'],dropdown:['A compact list of choices','목록에서 선택지 고르기'],rating:['Rate with five stars','별 다섯 개로 평가받기'],linear_scale:['A scale from zero to ten','0부터 10까지 평가받기'],ranking:['Put options in order','선택지의 순위 정하기'],consent:['A confirmation checkbox','동의 여부 확인하기'],section:['A heading and a little context','제목과 설명으로 내용 나누기'],time:['Choose a time','시간 선택하기'],hidden:['Capture a URL parameter','URL의 변수값 받기']
 };
 export function BlockPicker({onSelect,children,open:controlled,onOpenChange,anchorRef,label}:{onSelect:(type:Field['type'])=>void;children?:ReactNode;open?:boolean;onOpenChange?:(open:boolean)=>void;anchorRef?:React.RefObject<HTMLElement|null>;label?:string}){
