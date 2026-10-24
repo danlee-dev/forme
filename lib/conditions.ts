@@ -12,6 +12,7 @@ export function matchesRule(rule:ConditionRule,answers:Values,available?:Set<str
  if(op==='is_empty')return empty(value);if(op==='is_filled')return !empty(value);
  if(!rule.operator&&rule.value==='')return empty(value);
  if(empty(value))return false;
+ if(typeof value==='number'&&(op==='equals'||op==='not_equals')){if(!rule.value.trim()||!Number.isFinite(Number(rule.value)))return false;return op==='equals'?value===Number(rule.value):value!==Number(rule.value)}
  if(op==='equals')return Array.isArray(value)?value.includes(rule.value):String(value)===rule.value;
  if(op==='not_equals')return Array.isArray(value)?!value.includes(rule.value):String(value)!==rule.value;
  if(['greater_than','greater_or_equal','less_than','less_or_equal'].includes(op)){if(Array.isArray(value)||typeof value==='boolean'||!rule.value.trim())return false;const a=Number(value),b=Number(rule.value);if(!Number.isFinite(a)||!Number.isFinite(b))return false;return op==='greater_than'?a>b:op==='greater_or_equal'?a>=b:op==='less_than'?a<b:a<=b}
