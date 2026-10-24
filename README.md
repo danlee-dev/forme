@@ -1,0 +1,56 @@
+# Forme
+
+A considered form builder, built with Next.js 16, React 19, TypeScript and Supabase.
+
+## Development
+
+Node 22+. Run npm ci, copy .env.example to .env.local and fill in your own project settings, then npm run dev.
+Run database/schema.sql once on an empty Supabase project. All private tables use RLS; write access is restricted to the authenticated server layer.
+The SUPABASE_SECRET_KEY and INTEGRATION_ENCRYPTION_KEY must never use NEXT_PUBLIC_ prefixes or be committed.
+
+## Commands
+
+- npm run dev — localhost development
+- npm run build — production build
+- npm run typecheck — TypeScript
+- npm test — domain validation tests
+- npm run mcp — stdio MCP bridge (FORME_URL and FORME_API_KEY required)
+
+## Product and design
+
+See docs/PRODUCT.md and docs/FEATURE-RESEARCH.md. The research matrix explicitly distinguishes implemented features from missing competitor features. This release is not full Tally/Google Forms parity or a verified large-scale SaaS.
+
+The product chrome is monochrome, with locally drawn 24-unit SVG symbols in components/icons.tsx. Form-specific colors are separate from product controls. Fonts are self-hosted Pretendard under SIL OFL (public/fonts/LICENSE.txt). Motion is transform/opacity focused and honors prefers-reduced-motion.
+
+## Main routes
+
+- / — workspace and form drafts
+- /templates — reusable templates
+- /forms/:id/edit — editor, design, publishing settings
+- /f/:slug — public responder
+- /f/next-homecoming — NEXT homecoming example (details TBD, collection closed)
+- /responses — owner-only responses, summaries, CSV
+- /integrations — Sheets, keys, MCP
+- /docs — end-user and developer instructions
+
+## Integrations
+
+Google Sheets currently uses the supplied Apps Script bridge. Set script properties FORME_SECRET and SPREADSHEET_ID and deploy it yourself. Forme stores submissions before attempting delivery; failed deliveries can be retried. ScriptLock and submission IDs prevent duplicate rows. OAuth one-click Sheets is not implemented.
+
+AI uses Vercel AI Gateway through AI SDK 7, with OIDC on Vercel or AI_GATEWAY_API_KEY. Default model openai/gpt-5.4-mini. Users authenticate before generation; database-backed per-user limits apply. Unavailable AI never falls back to fake generation.
+
+The authenticated Streamable HTTP endpoint is /api/mcp. Use a personal Forme API key in Authorization: Bearer. Tools: list_forms, get_form, create_form, update_form, publish_form, list_responses.
+Claude Code command is available on /integrations. Codex and other MCP clients can use the same endpoint; a stdio bridge is in connectors/mcp-server.mjs. Plugin source lives in plugins/forme.
+
+## Deployment
+
+Connect this repository to Vercel, set the environment variables on the intended project, and deploy. Add the deployed site URL to Supabase Auth URL Configuration for email links and password recovery. Never include DATABASE_PASSWORD in Vercel; the application uses HTTPS Data API, not direct DB access.
+
+## Data boundaries
+
+Public forms expose saved publication snapshots, not private drafts. API keys are stored as SHA-256 hashes; Sheets secrets use AES-256-GCM. APIs check ownership on every private operation. Submissions use server validation, size bounds, idempotency, atomic quota and deadline checks. CSV formula injection is neutralized.
+No prior NEXT respondent data is included. Example forms are not collecting real event applications.
+
+## Known limitations
+
+No billing, organization collaboration, file uploads, quiz scoring, advanced calculation engine, custom domains or email notification delivery yet. See the research matrix. Run load testing, abuse protection, observability and recovery exercises before claiming high-volume readiness.
