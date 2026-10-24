@@ -20,7 +20,7 @@
 - scripts/verify-advanced.mjs: 실제 API 13개 경계 검증. 조건부 필수, 사용자 오류 문구, 숨김 답변 제외, 전체 내보내기, 익명/다른 소유자 차단, 검토 전 게시 차단.
 - CSV API는 실제 테스트 전용 폼에 총 1,007개 응답을 생성해 1,000행 배치 이후까지 검사했다. 그중 1,005행은 같은 시각으로 생성해서 ID 커서까지 검증했다.
 - 테스트 전용 계정·폼·게시본·응답은 finally에서 삭제했다.
-- 배포 후 같은 API 스크립트를 다시 실행한다. 프로덕션 결과는 아래 상태에 갱신한다.
+- 배포 후 같은 API 스크립트를 다시 실행해 13개 경계가 모두 통과했으며, 테스트 데이터를 삭제했다.
 
 ## 한계
 
@@ -32,4 +32,6 @@
 
 ## 배포 상태
 
-프로덕션 배포 및 배포 후 API 회귀 확인 중.
+코드 커밋 94c604346bbdd1f6a25fffbb70b81b545a3d6afc의 프로덕션 배포가 READY이며 https://forme-alpha-peach.vercel.app 에 연결됐다. 배포 후 scripts/verify-advanced.mjs의 13개 검증도 전부 통과했다. 해당 코드 커밋의 GitHub CI도 통과했다.
+
+운영 DB에 database/response-export-index.sql을 적용하고 인덱스 유효 상태를 확인했다. 조회 순서에 맞춘 (form_id, created_at, id) 복합 인덱스를 쓰며, 기존 인덱스는 유지했다. Supabase 공식 Studio 소스에 명시된 CA를 사용해 인증서와 호스트 이름 검증을 켠 연결로 적용했다.

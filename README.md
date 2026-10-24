@@ -5,7 +5,7 @@ A considered form builder, built with Next.js 16, React 19, TypeScript and Supab
 ## Development
 
 Node 24. Run npm ci, copy .env.example to .env.local and fill in your own project settings, then npm run dev.
-Run database/schema.sql, then database/versions.sql once on an empty Supabase project. All private tables use RLS; write access is restricted to the authenticated server layer.
+Run database/schema.sql, then database/versions.sql once on an empty Supabase project. Run database/response-export-index.sql separately outside a transaction for the response export cursor index. All private tables use RLS; write access is restricted to the authenticated server layer.
 The SUPABASE_SECRET_KEY and INTEGRATION_ENCRYPTION_KEY must never use NEXT_PUBLIC_ prefixes or be committed.
 
 ## Commands
