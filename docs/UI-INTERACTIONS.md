@@ -33,3 +33,13 @@ Research matrix and remaining product features are tracked in FEATURE-RESEARCH.m
 ## Internationalization
 
 English/Korean UI, weighted browser language matching, persistent header switch, localized calendars/dates/counts, translated validation and API errors, and bilingual help. Latin typography uses self-hosted Inter. English copy uses short action labels. Form content is never implicitly translated. Respondent chrome can be fixed per form or follow browser language. Server-rendered fixture tests cover English workspace/account/integrations/responses/dialogs and language isolation between public examples.
+
+## Document editor
+
+Questions are edited directly on a white document canvas. Block controls live in a side gutter. Enter adds a question; Shift+Enter keeps a line break; slash opens a searchable type palette when a title is empty or fully selected. A plus inserts after the current block. A draggable handle opens block actions and supports reordering. Move-up/down actions provide a keyboard and touch alternative. Conditional blocks cannot move before their references.
+
+Choices support Enter to insert the next option. IME composition is excluded from structural shortcuts. Titles grow with their content. Descriptions appear on demand. Cmd/Ctrl+S saves; Cmd/Ctrl+Z and Shift+Z use draft history. Empty titles receive recoverable draft names. Cloud saving and publishing remain explicit.
+
+Published forms use the same document rhythm. Repeated section dividers and classic-layout progress metadata are removed. A progress indicator remains for one-question-at-a-time forms.
+
+DOM event and ordering tests cover these behaviors. They do not substitute for cross-browser visual review.
