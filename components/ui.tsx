@@ -1,7 +1,23 @@
 'use client';
-import {useEffect,useRef,useState,type ReactNode} from 'react';
-import {X,ArrowUpRight} from './icons';
-export function Modal({title,children,onClose,wide=false}:{title:string;children:ReactNode;onClose:()=>void;wide?:boolean}){const ref=useRef<HTMLDialogElement>(null);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);const [closing,setClosing]=useState(false);useEffect(()=>{const el=ref.current;const old=document.body.style.overflow;document.body.style.overflow='hidden';el?.showModal();return()=>{if(timer.current)clearTimeout(timer.current);el?.close();document.body.style.overflow=old}},[]);function close(){if(closing)return;setClosing(true);timer.current=setTimeout(onClose,160)}return <dialog ref={ref} className={'modal '+(wide?'wide ':'')+(closing?'closing':'')} onCancel={e=>{e.preventDefault();close()}} onClick={e=>{if(e.target===e.currentTarget)close()}}><div className="modal-head"><h2>{title}</h2><button className="icon-btn" onClick={close} aria-label="닫기"><X size={20}/></button></div>{children}</dialog>}
-export function Cover({kind='peach',compact=false}:{kind?:string;compact?:boolean}){return <div aria-hidden="true" className={'cover cover-'+kind+(compact?' compact':'')}><div className="shape shape-a"/><div className="shape shape-b"/><div className="shape shape-c"/><span className="cover-star">✳</span><span className="cover-tiny">a little space for your story</span></div>}
-export function Empty({title,description,children}:{title:string;description:string;children?:ReactNode}){return <div className="empty"><span className="empty-symbol">✧</span><h3>{title}</h3><p>{description}</p>{children}</div>}
-export function ExternalIcon(){return <ArrowUpRight size={16}/>}
+import {useLocale} from './locale';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { X, ArrowUpRight } from './icons';
+export function Modal({ title, children, onClose, wide = false }: {
+    title: string;
+    children: ReactNode;
+    onClose: () => void;
+    wide?: boolean;
+}) { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); const ref = useRef<HTMLDialogElement>(null); const timer = useRef<ReturnType<typeof setTimeout> | null>(null); const [closing, setClosing] = useState(false); useEffect(() => { const el = ref.current; const old = document.body.style.overflow; document.body.style.overflow = 'hidden'; el?.showModal(); return () => { if (timer.current)
+    clearTimeout(timer.current); el?.close(); document.body.style.overflow = old; }; }, []); function close() { if (closing)
+    return; setClosing(true); timer.current = setTimeout(onClose, 160); } return <dialog ref={ref} className={'modal ' + (wide ? 'wide ' : '') + (closing ? 'closing' : '')} onCancel={e => { e.preventDefault(); close(); }} onClick={e => { if (e.target === e.currentTarget)
+    close(); }}><div className="modal-head"><h2>{title}</h2><button className="icon-btn" onClick={close} aria-label={tr("닫기")}><X size={20}/></button></div>{children}</dialog>; }
+export function Cover({ kind = 'peach', compact = false }: {
+    kind?: string;
+    compact?: boolean;
+}) { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); return <div aria-hidden="true" className={'cover cover-' + kind + (compact ? ' compact' : '')}><div className="shape shape-a"/><div className="shape shape-b"/><div className="shape shape-c"/><span className="cover-star">✳</span><span className="cover-tiny">a little space for your story</span></div>; }
+export function Empty({ title, description, children }: {
+    title: string;
+    description: string;
+    children?: ReactNode;
+}) { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); return <div className="empty"><span className="empty-symbol">✧</span><h3>{title}</h3><p>{description}</p>{children}</div>; }
+export function ExternalIcon() { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); return <ArrowUpRight size={16}/>; }

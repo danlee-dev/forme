@@ -1,8 +1,43 @@
 'use client';
-import {GuestDrafts} from './guest-drafts';
-import {useState,useEffect} from 'react';
-import {supabase,configured} from '@/lib/supabase';
-import {useApp} from './provider';
-import {ArrowRight,LoaderCircle,LogOut,Shield,Import} from './icons';
-import {validateForm} from '@/lib/schema';
-export function Account(){const {user,notice,save}=useApp();const [mode,setMode]=useState('login');const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');useEffect(()=>{const subscription=supabase?.auth.onAuthStateChange(event=>{if(event==='PASSWORD_RECOVERY')setMode('recover')});return()=>subscription?.data.subscription.unsubscribe()},[]);async function submit(e:React.FormEvent){e.preventDefault();if(!supabase)return;setBusy(true);setMessage('');try{if(mode==='recover'){const {error}=await supabase.auth.updateUser({password});if(error)throw error;setMode('login');notice('비밀번호를 변경했어요.');}else if(mode==='reset'){const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/settings'});if(error)throw error;setMessage('메일로 비밀번호 재설정 링크를 보냈어요.');}else if(mode==='signup'){const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:location.origin+'/settings'}});if(error)throw error;setMessage(data.session?'계정이 준비됐어요.':'이메일의 확인 링크를 누른 뒤 로그인해주세요.');}else{const {error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;notice('로그인했어요.');}}catch(e){setMessage((e as Error).message);}finally{setBusy(false)}}return <main className="standard-page account-page" id="main-content"><div className="page-heading"><div><div className="eyebrow">YOUR SPACE</div><h1>설정</h1><p>당신의 작업을 안전하게 보관하세요.</p></div></div>{user&&mode!=='recover'?<><section className="panel account-card"><span className="account-initial">{user.email?.[0]?.toUpperCase()}</span><h2>{user.email}</h2><p className="muted">개인 워크스페이스 · 폼과 응답은 계정별로 분리됩니다.</p><button className="btn" onClick={async()=>{await supabase?.auth.signOut();notice('로그아웃했어요.')}}><LogOut size={16}/>로그아웃</button></section><GuestDrafts/></>:<section className="auth-layout"><div className="auth-story"><div className="auth-line-art"><span/><span/><span/></div><h2>A space for<br/>good questions.</h2><p>한 장의 폼에서 시작해<br/>더 많은 가능성으로.</p><small><Shield size={14}/> 폼과 응답은 본인 계정에서만 관리할 수 있어요.</small></div><div className="auth-card"><div className="auth-tabs"><button className={mode==='login'?'selected':''} onClick={()=>setMode('login')}>로그인</button><button className={mode==='signup'?'selected':''} onClick={()=>setMode('signup')}>회원가입</button></div><h2>{mode==='login'?'다시 만나 반가워요.':mode==='signup'?'계정 만들기':mode==='recover'?'새 비밀번호를 설정하세요.':'비밀번호를 잊으셨나요?'}</h2><p className="muted">{mode==='reset'?'계정 이메일로 재설정 링크를 보내드려요.':'폼을 저장하고, 게시하고, 응답을 모아보세요.'}</p><form onSubmit={submit}>{mode!=='recover'&&<label className="control-label">이메일<input type="email" autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} required placeholder="you@example.com"/></label>}{mode!=='reset'&&<label className="control-label">비밀번호<input type="password" minLength={8} autoComplete={mode==='signup'?'new-password':'current-password'} value={password} onChange={e=>setPassword(e.target.value)} required placeholder="8자 이상"/></label>}<button className="btn btn-dark full-width" disabled={busy||!configured}>{busy?<LoaderCircle size={16} className="spin"/>:null}{mode==='login'?'로그인':mode==='signup'?'계정 만들기':mode==='recover'?'새 비밀번호 저장':'재설정 링크 받기'}<ArrowRight size={16}/></button>{message&&<p role="status" className="account-message">{message}</p>}{!configured&&<p className="error-banner">서버의 Supabase 연결 설정이 필요합니다.</p>}</form><button className="text-btn password-reset" onClick={()=>setMode(mode==='reset'?'login':'reset')}>{mode==='reset'?'로그인으로 돌아가기':'비밀번호를 잊으셨나요?'}</button></div></section>}<section className="panel data-note"><Shield size={19}/><div><b>데이터는 신중하게 다룹니다.</b><p>공개되는 것은 게시한 폼뿐입니다. 응답과 연동 비밀값은 공개 링크에 포함되지 않습니다.</p></div></section></main>}
+import {useLocale} from './locale';
+import { GuestDrafts } from './guest-drafts';
+import { useState, useEffect } from 'react';
+import { supabase, configured } from '@/lib/supabase';
+import { useApp } from './provider';
+import { ArrowRight, LoaderCircle, LogOut, Shield, Import } from './icons';
+import { validateForm } from '@/lib/schema';
+export function Account() { const { t: tr, locale, date: formatDate, count: formatCount } = useLocale(); const { user, notice, save } = useApp(); const [mode, setMode] = useState('login'); const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const [message, setMessage] = useState(''); useEffect(() => { const subscription = supabase?.auth.onAuthStateChange(event => { if (event === 'PASSWORD_RECOVERY')
+    setMode('recover'); }); return () => subscription?.data.subscription.unsubscribe(); }, []); async function submit(e: React.FormEvent) { e.preventDefault(); if (!supabase)
+    return; setBusy(true); setMessage(''); try {
+    if (mode === 'recover') {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error)
+            throw error;
+        setMode('login');
+        notice(tr("비밀번호를 변경했어요."));
+    }
+    else if (mode === 'reset') {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + '/settings' });
+        if (error)
+            throw error;
+        setMessage(tr("메일로 비밀번호 재설정 링크를 보냈어요."));
+    }
+    else if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + '/settings' } });
+        if (error)
+            throw error;
+        setMessage(data.session ? tr("계정이 준비됐어요.") : tr("이메일의 확인 링크를 누른 뒤 로그인해주세요."));
+    }
+    else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error)
+            throw error;
+        notice(tr("로그인했어요."));
+    }
+}
+catch (e) {
+    setMessage((e as Error).message);
+}
+finally {
+    setBusy(false);
+} } return <main className="standard-page account-page" id="main-content"><div className="page-heading"><div><div className="eyebrow">YOUR SPACE</div><h1>{tr("설정")}</h1><p>{tr("당신의 작업을 안전하게 보관하세요.")}</p></div></div>{user && mode !== 'recover' ? <><section className="panel account-card"><span className="account-initial">{user.email?.[0]?.toUpperCase()}</span><h2>{user.email}</h2><p className="muted">{tr("개인 워크스페이스 · 폼과 응답은 계정별로 분리됩니다.")}</p><button className="btn" onClick={async () => { await supabase?.auth.signOut(); notice(tr("로그아웃했어요.")); }}><LogOut size={16}/>{tr("로그아웃")}</button></section><GuestDrafts /></> : <section className="auth-layout"><div className="auth-story"><div className="auth-line-art"><span /><span /><span /></div><h2>A space for<br />good questions.</h2><p>{tr("한 장의 폼에서 시작해")}<br />{tr("더 많은 가능성으로.")}</p><small><Shield size={14}/>{tr("폼과 응답은 본인 계정에서만 관리할 수 있어요.")}</small></div><div className="auth-card"><div className="auth-tabs"><button className={mode === 'login' ? 'selected' : ''} onClick={() => setMode('login')}>{tr("로그인")}</button><button className={mode === 'signup' ? 'selected' : ''} onClick={() => setMode('signup')}>{tr("회원가입")}</button></div><h2>{mode === 'login' ? tr("다시 만나 반가워요.") : mode === 'signup' ? tr("계정 만들기") : mode === 'recover' ? tr("새 비밀번호를 설정하세요.") : tr("비밀번호를 잊으셨나요?")}</h2><p className="muted">{mode === 'reset' ? tr("계정 이메일로 재설정 링크를 보내드려요.") : tr("폼을 저장하고, 게시하고, 응답을 모아보세요.")}</p><form onSubmit={submit}>{mode !== 'recover' && <label className="control-label">{tr("이메일")}<input type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@example.com"/></label>}{mode !== 'reset' && <label className="control-label">{tr("비밀번호")}<input type="password" minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} required placeholder={tr("8자 이상")}/></label>}<button className="btn btn-dark full-width" disabled={busy || !configured}>{busy ? <LoaderCircle size={16} className="spin"/> : null}{mode === 'login' ? tr("로그인") : mode === 'signup' ? tr("계정 만들기") : mode === 'recover' ? tr("새 비밀번호 저장") : tr("재설정 링크 받기")}<ArrowRight size={16}/></button>{message && <p role="status" className="account-message">{message}</p>}{!configured && <p className="error-banner">{tr("서버의 Supabase 연결 설정이 필요합니다.")}</p>}</form><button className="text-btn password-reset" onClick={() => setMode(mode === 'reset' ? 'login' : 'reset')}>{mode === 'reset' ? tr("로그인으로 돌아가기") : tr("비밀번호를 잊으셨나요?")}</button></div></section>}<section className="panel data-note"><Shield size={19}/><div><b>{tr("데이터는 신중하게 다룹니다.")}</b><p>{tr("공개되는 것은 게시한 폼뿐입니다. 응답과 연동 비밀값은 공개 링크에 포함되지 않습니다.")}</p></div></section></main>; }

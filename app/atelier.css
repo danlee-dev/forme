@@ -66,3 +66,23 @@ input[type=number]{appearance:textfield}input::-webkit-outer-spin-button,input::
 .guest-import{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#fff;border-radius:20px;padding:18px 23px;margin:0 0 27px;box-shadow:0 3px 15px #24242403}.guest-import b{font-size:15px;font-weight:570}.guest-import p{font-size:13px;color:#63636b;margin-top:4px}.ai-login-link{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:550;padding:13px 0 0;color:#33333a}
 .form-submit{color:var(--form-on-accent,#fff);box-shadow:inset 0 0 0 1px #0000000d}.choice.chosen .choice-letter{color:var(--form-on-accent,#fff)}.choice.chosen{border-color:var(--form-visible-accent,var(--form-accent))}.form-progress>span{background:var(--form-visible-accent,var(--form-accent))}.consent-input>input:checked::after{border-color:var(--form-on-accent,#fff)}
 @media(max-width:680px){.atelier-shell .auth-card{padding:28px 24px}.guest-import{padding:17px;align-items:flex-start;flex-direction:column;gap:12px}.guest-import b{font-size:14px}.guest-import p{font-size:13px}}
+@font-face{font-family:Inter;src:url('/fonts/InterVariable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+html[lang=en] body{font-family:Inter,Pretendard,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;letter-spacing:-.015em}
+html[lang=en] h1,html[lang=en] h2,html[lang=en] h3{letter-spacing:-.04em}
+html[lang=en] .desk-heading h1{font-size:34px;letter-spacing:-1.3px}
+html[lang=en] .creation-tray b{font-size:19px;letter-spacing:-.5px}
+html[lang=en] .creation-tray p{font-size:13px;letter-spacing:-.1px}
+html[lang=en] .atelier-header .logo{letter-spacing:-1.6px}
+html[lang=en] .atelier-nav a{font-size:13px;min-width:83px}
+.locale-switch{display:flex;align-items:center;gap:2px;flex-shrink:0;color:#54545c}
+.locale-switch>.custom-select{background:transparent;min-height:36px;padding:6px 7px;gap:5px;font-size:12px;max-width:88px;border-radius:10px}
+.locale-switch>.custom-select:hover{background:#eaeae7}
+.atelier-account{gap:9px}.atelier-header{padding-left:32px;padding-right:32px;gap:16px}.header-create{padding:7px}
+html[lang=en] .tray-art.writing-art>span{font-size:14px}
+html[lang=en] .paper-preview{font-family:Inter,Pretendard,sans-serif}
+.public-form{font-family:Inter,Pretendard,sans-serif;letter-spacing:-.015em}
+@media(max-width:1050px){.header-create{display:none}.atelier-header{padding-left:23px;padding-right:23px;gap:14px}}
+@media(max-width:940px){.atelier-header{height:74px;grid-template-columns:1fr auto;padding:0 21px}.atelier-nav{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#fffffff2;backdrop-filter:blur(20px);box-shadow:0 4px 30px #20202617;border-radius:24px;z-index:60;padding:6px;gap:4px;width:calc(100vw - 42px);max-width:450px;justify-content:space-between}.atelier-nav a,html[lang=en] .atelier-nav a{flex:1;min-width:0;flex-direction:column;gap:5px;padding:9px 8px;font-size:12px;border-radius:17px}.atelier-nav a.active{background:#eeeeeb;box-shadow:none}.atelier-footer{padding-bottom:115px}.atelier-shell .editor-toolbar{top:74px}.atelier-shell .editor-tabs{top:139px}.locale-switch>svg{width:14px}.locale-switch>.custom-select{font-size:12px}.atelier-account{gap:10px}}
+@media(max-width:680px){html[lang=en] .desk-heading h1{font-size:27px;letter-spacing:-1px}html[lang=en] .creation-tray b{font-size:13px;letter-spacing:-.25px}html[lang=en] .tray-art.writing-art>span{font-size:10px}.atelier-header .logo{font-size:25px}.locale-switch>svg{display:none}.locale-switch>.custom-select{padding-left:2px;padding-right:3px;max-width:75px}.account-button{gap:7px;padding:8px 11px}.atelier-shell .editor-tabs{top:179px}.atelier-shell .desk-heading{align-items:center}.desk-heading p{max-width:210px}.desk-primary{white-space:normal;text-align:center;max-width:137px}.creation-tray{gap:10px}html[lang=en] .atelier-shell .question-title-edit{letter-spacing:-.4px}}
+
+@media(max-width:360px){.atelier-header{padding-left:15px;padding-right:15px;gap:10px}.atelier-account{gap:6px}}

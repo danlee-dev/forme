@@ -37,7 +37,7 @@ try{
  r=await request('/api/v1/forms/'+id+'/versions',b);check('other owner cannot read version history',()=>assert.equal(r.status,404));
  r=await request('/api/v1/forms/'+id+'/versions',a,'POST',{revision:revisionToRestore});check('restore creates a fresh draft revision',()=>{assert.equal(r.status,200);assert.ok(r.data.form.revision>newer.revision);});
  r=await request('/api/v1/forms/'+id,a,'POST',{action:'close'});check('atomic close increments revision',()=>assert.equal(r.data.form.status,'closed'));
- p=await fetch(base+'/f/'+slug);const closedHtml=await p.text();check('closed form remains viewable with explicit closed message',()=>assert.match(closedHtml,/응답 접수가 중단/));
+ p=await fetch(base+'/f/'+slug);const closedHtml=await p.text();check('closed form remains viewable with explicit closed message',()=>assert.match(closedHtml,/응답 접수가 중단|isn.t accepting responses/));
 console.log('Verified '+count+' API boundaries.');
 }finally{
  for(const id of userIds){const {error}=await admin.auth.admin.deleteUser(id);if(error)console.error('Test account cleanup failed');}

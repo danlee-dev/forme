@@ -7,10 +7,11 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "tsx --test tests/*.test.ts tests/*.test.tsx",
     "mcp": "node connectors/mcp-server.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
     "@modelcontextprotocol/sdk": "1.32.2",
     "@radix-ui/react-popover": "^1.3.1",
     "@supabase/ssr": "0.12.7",

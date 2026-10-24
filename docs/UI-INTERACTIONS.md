@@ -29,3 +29,7 @@ Reference principles:
 - Local Lectranscribe web/mobile visual references supplied by the user
 
 Research matrix and remaining product features are tracked in FEATURE-RESEARCH.md.
+
+## Internationalization
+
+English/Korean UI, weighted browser language matching, persistent header switch, localized calendars/dates/counts, translated validation and API errors, and bilingual help. Latin typography uses self-hosted Inter. English copy uses short action labels. Form content is never implicitly translated. Respondent chrome can be fixed per form or follow browser language. Server-rendered fixture tests cover English workspace/account/integrations/responses/dialogs and language isolation between public examples.

@@ -22,6 +22,12 @@ See docs/PRODUCT.md and docs/FEATURE-RESEARCH.md. The research matrix explicitly
 
 The Atelier interface replaces the fixed sidebar with top navigation and a mobile bottom dock. Form types, selects, calendars, time and color controls use custom UI with keyboard support. The product chrome is monochrome, with locally drawn 24-unit SVG symbols in components/icons.tsx. Form-specific colors are separate from product controls. Fonts are self-hosted Pretendard under SIL OFL (public/fonts/LICENSE.txt). Motion is transform/opacity focused and honors prefers-reduced-motion.
 
+## Languages
+
+English and Korean are supported across the workspace, editor, account, responses, integrations and help. New visitors use their supported browser language, falling back to English. The header switch persists an explicit preference in a first-party cookie. Inter is self-hosted for Latin text, with Pretendard for Korean; both licenses are in public/fonts.
+
+Form content is separate from application language. New forms and AI generation use the creator’s selected language. Form settings can fix respondent controls to English/Korean or follow the respondent’s browser. Existing questions and responses are never automatically translated. The English NEXT example is /f/next-homecoming-en; the Korean example remains /f/next-homecoming. Both are closed and keep event details TBD.
+
 ## Main routes
 
 - / — workspace and form drafts
