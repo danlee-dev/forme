@@ -10,6 +10,7 @@ type Option = {
     disabled?: boolean;
 };
 type Props = {
+    valueLabel?:ReactNode;
     children: ReactNode;
     value?: string;
     onChange?: (e: {
@@ -26,7 +27,7 @@ type Props = {
     'aria-required'?: boolean;
     onBlur?:()=>void;
 };
-export function Select({ children, value = '', onChange, className = '', onBlur, ...props }: Props) {
+export function Select({ children, value = '', onChange, className = '', onBlur, valueLabel, ...props }: Props) {
     const { t: tr, locale, date: formatDate, count: formatCount } = useLocale();
     const options = Children.toArray(children).filter(isValidElement<Option>).map(c => c.props);
     const [open, setOpen] = useState(false), [query, setQuery] = useState(''), [active, setActive] = useState(0);
@@ -36,7 +37,7 @@ export function Select({ children, value = '', onChange, className = '', onBlur,
     const filtered = options.filter(o => !o.disabled && String(o.children).toLowerCase().includes(query.toLowerCase()));
     function pick(o: Option) { onChange?.({ target: { value: o.value } }); setOpen(false); }
     return <Popover.Root open={open} onOpenChange={v => { setContainer(trigger.current?.closest('dialog') || undefined); setOpen(v); setQuery(''); setActive(Math.max(0, options.findIndex(o => o.value === value))); }}>
- <Popover.Trigger ref={trigger} type="button" {...props} onBlur={()=>{if(!open)onBlur?.()}} className={'custom-select ' + className} aria-haspopup="listbox"><span>{options.find(o => o.value === value)?.children || tr("선택해주세요")}</span><ChevronDown size={15}/></Popover.Trigger>
+ <Popover.Trigger ref={trigger} type="button" {...props} onBlur={()=>{if(!open)onBlur?.()}} className={'custom-select ' + className} aria-haspopup="listbox"><span>{valueLabel??(options.find(o => o.value === value)?.children || tr("선택해주세요"))}</span><ChevronDown size={15}/></Popover.Trigger>
  <Popover.Portal container={container}><Popover.Content className="select-popover" sideOffset={8} collisionPadding={12} align="start">
  <label className="select-search"><Search size={17}/><input autoFocus value={query} aria-label={(props['aria-label'] || tr("항목")) + ' ' + tr("검색")} role="combobox" aria-autocomplete="list" aria-expanded aria-controls={id} aria-activedescendant={filtered[active] ? id + '-' + active : undefined} placeholder={tr("검색하거나 선택하세요")} onChange={e => { setQuery(e.target.value); setActive(0); }} onKeyDown={e => { if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
         e.preventDefault();
