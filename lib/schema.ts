@@ -17,12 +17,12 @@ export function isVisible(field:Field,answers:Answers){if(!field.condition)retur
 export function validateAnswers(form:FormDocument,answers:Answers){
  const errors:Record<string,string>={};const clean:Answers={};
  for(const f of form.fields){if(f.type==='section'||!isVisible(f,clean))continue;const value=answers[f.id];const empty=value===undefined||value===''||value===false||(Array.isArray(value)&&value.length===0);
- if(empty){if(f.required)errors[f.id]='이 항목을 입력해주세요.';continue;}
+ if(empty){if(f.required&&f.type!=='hidden')errors[f.id]='이 항목을 입력해주세요.';continue;}
  if(f.type==='multi_select'||f.type==='ranking'){if(!Array.isArray(value)||value.length>30||value.some(v=>!f.options.includes(v))||(f.type==='ranking'&&(value.length!==f.options.length||new Set(value).size!==value.length)))errors[f.id]='선택 항목을 확인해주세요.';else clean[f.id]=[...new Set(value)];continue;}
  if(f.type==='consent'){if(value!==true)errors[f.id]='동의 여부를 확인해주세요.';else clean[f.id]=true;continue;}
  if(f.type==='rating'||f.type==='number'||f.type==='linear_scale'){const n=Number(value);if(!Number.isFinite(n)||(f.type==='rating'&&(!Number.isInteger(n)||n<1||n>5))||(f.type==='linear_scale'&&(!Number.isInteger(n)||n<0||n>10)))errors[f.id]='올바른 숫자를 입력해주세요.';else clean[f.id]=n;continue;}
  if(typeof value!=='string'||value.length>5000){errors[f.id]='5,000자 이하로 입력해주세요.';continue;}
- const s=value.trim(); if(f.required&&!s){errors[f.id]='이 항목을 입력해주세요.';continue;}
+ const s=value.trim(); if(f.required&&f.type!=='hidden'&&!s){errors[f.id]='이 항목을 입력해주세요.';continue;}
  if(f.type==='email'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s))errors[f.id]='이메일 주소를 확인해주세요.';
  if(f.type==='phone'&&!/^\+?[\d\s()-]{7,30}$/.test(s))errors[f.id]='전화번호를 확인해주세요.';
  if(f.type==='date'&&(!/^\d{4}-\d{2}-\d{2}$/.test(s)||Number.isNaN(Date.parse(s))||new Date(s).toISOString().slice(0,10)!==s))errors[f.id]='날짜를 확인해주세요.';

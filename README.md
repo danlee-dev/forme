@@ -4,8 +4,8 @@ A considered form builder, built with Next.js 16, React 19, TypeScript and Supab
 
 ## Development
 
-Node 22+. Run npm ci, copy .env.example to .env.local and fill in your own project settings, then npm run dev.
-Run database/schema.sql once on an empty Supabase project. All private tables use RLS; write access is restricted to the authenticated server layer.
+Node 24. Run npm ci, copy .env.example to .env.local and fill in your own project settings, then npm run dev.
+Run database/schema.sql, then database/versions.sql once on an empty Supabase project. All private tables use RLS; write access is restricted to the authenticated server layer.
 The SUPABASE_SECRET_KEY and INTEGRATION_ENCRYPTION_KEY must never use NEXT_PUBLIC_ prefixes or be committed.
 
 ## Commands
@@ -20,7 +20,7 @@ The SUPABASE_SECRET_KEY and INTEGRATION_ENCRYPTION_KEY must never use NEXT_PUBLI
 
 See docs/PRODUCT.md and docs/FEATURE-RESEARCH.md. The research matrix explicitly distinguishes implemented features from missing competitor features. This release is not full Tally/Google Forms parity or a verified large-scale SaaS.
 
-The product chrome is monochrome, with locally drawn 24-unit SVG symbols in components/icons.tsx. Form-specific colors are separate from product controls. Fonts are self-hosted Pretendard under SIL OFL (public/fonts/LICENSE.txt). Motion is transform/opacity focused and honors prefers-reduced-motion.
+The Atelier interface replaces the fixed sidebar with top navigation and a mobile bottom dock. Form types, selects, calendars, time and color controls use custom UI with keyboard support. The product chrome is monochrome, with locally drawn 24-unit SVG symbols in components/icons.tsx. Form-specific colors are separate from product controls. Fonts are self-hosted Pretendard under SIL OFL (public/fonts/LICENSE.txt). Motion is transform/opacity focused and honors prefers-reduced-motion.
 
 ## Main routes
 
@@ -37,7 +37,7 @@ The product chrome is monochrome, with locally drawn 24-unit SVG symbols in comp
 
 Google Sheets currently uses the supplied Apps Script bridge. Set script properties FORME_SECRET and SPREADSHEET_ID and deploy it yourself. Forme stores submissions before attempting delivery; failed deliveries can be retried. ScriptLock and submission IDs prevent duplicate rows. OAuth one-click Sheets is not implemented.
 
-AI uses Vercel AI Gateway through AI SDK 7, with OIDC on Vercel or AI_GATEWAY_API_KEY. Default model openai/gpt-5.4-mini. Users authenticate before generation; database-backed per-user limits apply. Unavailable AI never falls back to fake generation.
+AI uses Vercel AI Gateway through AI SDK 7, with OIDC on Vercel or AI_GATEWAY_API_KEY. Default model google/gemini-2.5-flash. AI also reviews existing questions and offers individually applicable suggestions. Users authenticate before generation; database-backed per-user limits apply. Unavailable AI never falls back to fake generation.
 
 The authenticated Streamable HTTP endpoint is /api/mcp. Use a personal Forme API key in Authorization: Bearer. Tools: list_forms, get_form, create_form, update_form, publish_form, list_responses.
 Claude Code command is available on /integrations. Codex and other MCP clients can use the same endpoint; a stdio bridge is in connectors/mcp-server.mjs. Plugin source lives in plugins/forme.

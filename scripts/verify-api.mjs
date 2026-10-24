@@ -32,7 +32,13 @@ try{
  r=await request('/api/mcp',apiKey,'POST',{jsonrpc:'2.0',id:1,method:'initialize',params:{protocolVersion:'2025-06-18',capabilities:{},clientInfo:{name:'verification',version:'1'}}});check('MCP initializes',()=>assert.equal(r.status,200));
  const mr=await fetch(base+'/api/mcp',{method:'POST',headers:{Authorization:'Bearer '+apiKey,'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/list',params:{}})});const md=await mr.json();check('MCP discovers six actual tools',()=>assert.equal(md.result.tools.length,6));
  await request('/api/integrations',a,'POST',{action:'revoke_key',id:keyId});r=await request('/api/v1/forms',apiKey);check('revoked key rejected',()=>assert.equal(r.status,401));
- console.log('Verified '+count+' API boundaries.');
+ r=await request('/api/v1/forms/'+id+'/versions',a);check('owner reads saved versions',()=>assert.ok(r.status===200&&r.data.versions.length>=2));
+ const revisionToRestore=r.data.versions.at(-1).revision;
+ r=await request('/api/v1/forms/'+id+'/versions',b);check('other owner cannot read version history',()=>assert.equal(r.status,404));
+ r=await request('/api/v1/forms/'+id+'/versions',a,'POST',{revision:revisionToRestore});check('restore creates a fresh draft revision',()=>{assert.equal(r.status,200);assert.ok(r.data.form.revision>newer.revision);});
+ r=await request('/api/v1/forms/'+id,a,'POST',{action:'close'});check('atomic close increments revision',()=>assert.equal(r.data.form.status,'closed'));
+ p=await fetch(base+'/f/'+slug);const closedHtml=await p.text();check('closed form remains viewable with explicit closed message',()=>assert.match(closedHtml,/응답 접수가 중단/));
+console.log('Verified '+count+' API boundaries.');
 }finally{
  for(const id of userIds){const {error}=await admin.auth.admin.deleteUser(id);if(error)console.error('Test account cleanup failed');}
 }

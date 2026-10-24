@@ -47,3 +47,20 @@ const shapes:Record<string,React.ReactNode>={
 };
 function symbol(name:string){return function Symbol({size=20,...props}:Props){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{shapes[name]}</svg>}}
 export const LayoutGrid=symbol('grid'),Inbox=symbol('inbox'),Layers=symbol('layers'),Plug=symbol('plug'),Settings=symbol('settings'),BookOpen=symbol('book'),Plus=symbol('plus'),ChevronDown=symbol('down'),ArrowUpRight=symbol('arrowUpRight'),ArrowRight=symbol('arrowRight'),ArrowLeft=symbol('arrowLeft'),ArrowUp=symbol('arrowUp'),ArrowDown=symbol('arrowDown'),Menu=symbol('menu'),X=symbol('x'),Sparkles=symbol('pen'),PenLine=symbol('pen'),SquarePen=symbol('pen'),Search=symbol('search'),List=symbol('list'),MoreHorizontal=symbol('more'),Copy=symbol('copy'),Trash2=symbol('trash'),ExternalLink=symbol('external'),Check=symbol('check'),CheckCircle2=symbol('checkCircle'),Eye=symbol('eye'),Globe=symbol('globe'),LoaderCircle=symbol('loader'),Palette=symbol('palette'),SlidersHorizontal=symbol('sliders'),Type=symbol('type'),GripVertical=symbol('grip'),Monitor=symbol('monitor'),Smartphone=symbol('phone'),Link=symbol('link'),Undo2=symbol('undo'),Redo2=symbol('redo'),Star=symbol('star'),LockKeyhole=symbol('lock'),RotateCcw=symbol('rotate'),LogOut=symbol('logout'),Shield=symbol('shield'),Import=symbol('download'),Download=symbol('download'),RefreshCw=symbol('rotate'),BarChart3=symbol('chart'),KeyRound=symbol('key'),Code2=symbol('code'),PanelLeft=symbol('panel'),FileText=symbol('file');
+const questionPaths:Record<string,React.ReactNode>={
+ short_text:<path d="M4 8h16M4 16h10"/>,
+ long_text:<path d="M4 5h16M4 10h16M4 15h16M4 20h10"/>,
+ email:<><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></>,
+ phone:shapes.phone,number:<path d="m9 3-2 18M17 3l-2 18M3 8h18M2 16h18"/>,
+ date:<><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18M8 14h2M14 14h2M8 17h2"/></>,
+ url:shapes.link,select:<><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r=".6"/><path d="M13 6h8M13 18h8"/></>,
+ multi_select:<><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><path d="m4 6 2 2 3-4M14 6h7M14 18h7"/></>,
+ rating:shapes.star,consent:shapes.checkCircle,
+ section:<path d="M4 4h16M4 10h10M4 20h16M4 16h16"/>,
+ dropdown:<><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m8 10 4 4 4-4"/></>,
+ time:<><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 3"/></>,
+ linear_scale:<><path d="M3 12h18M3 8v8M12 8v8M21 8v8"/><circle cx="12" cy="12" r="2"/></>,
+ ranking:<path d="M8 5h13M11 12h10M14 19h7M3 3v17m-2-3 2 3 2-3"/>,
+ hidden:<><path d="M3 3l18 18M9 5c7-2 12 7 12 7s-1 2-3 4M6 6c-3 2-5 6-5 6s4 7 11 7c2 0 4-1 5-2"/><path d="M10 10a3 3 0 0 0 4 4"/></>
+};
+export function QuestionIcon({type,size=19,...props}:Props&{type:string}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{questionPaths[type]||questionPaths.short_text}</svg>}
